@@ -13,8 +13,8 @@ public class ElevatorController extends Thread {
 	private int direction;
 
 	public ElevatorController(int elevator) {
-		direction = 0;
-		floor = targetFloor = 0;
+		setDirection(0);
+		floor = setTargetFloor(0);
 		this.elevator = elevator;
 		outbox = new ArrayDeque<Message>();
 		inbox = new ArrayDeque<Message>();
@@ -35,41 +35,39 @@ public class ElevatorController extends Thread {
 				case 'p':
 					if (msg.getModifier() == 32000) {
 						addMessage(new Message('m', elevator, 0, 0));
-						direction = 0;
+						inbox.clear();
+						setDirection(0);
 						continue;
 					}
-					if (direction != 0)
+					if (getDirection() != 0)
 						postMessage(msg);
 					else
-						targetFloor = msg.getModifier();
+						setTargetFloor(msg.getModifier());
 					break;
 				case 'f':
-					if (direction == 0) continue;
-					setFloor((direction==1?Math.floor(msg.getFloor()):Math.ceil(msg.getFloor())));
-					System.err.println(getFloor() + " " + targetFloor);
-					if (getFloor() == targetFloor) {
+					if (getDirection() == 0) continue;
+					setFloor((getDirection()==1?Math.floor(msg.getFloor()):Math.ceil(msg.getFloor())));
+					System.err.println("Floor targetFloor: " + getFloor() + " " + getTargetFloor());
+					if (getFloor() == getTargetFloor()) {
 						
 							addMessage(new Message('m', elevator, 0, 0));
-							direction = 0;
-							addMessage(new Message('d', elevator, 1, 0));
-							Thread.sleep(2000);
-							addMessage(new Message('d', elevator, -1, 0));
-							Thread.sleep(1000);
+							setDirection(0);
+							doorAction();
 					}
 					break;
 				default:
 					System.out.println("Unhandled message.");
 				}
-				if (direction == 0) {
+				if (getDirection() == 0) {
 					int modifier;
-					if(getFloor() < targetFloor) {
+					if(getFloor() < getTargetFloor()) {
 						System.err.println("Going up.");
-						direction = 1;
+						setDirection(1);
 						modifier = 1;
 					}
-					else if(getFloor() > targetFloor){
+					else if(getFloor() > getTargetFloor()){
 						System.err.println("Going down.");
-						direction = -1;
+						setDirection(-1);
 						modifier = -1;
 					}
 					else{
@@ -82,6 +80,13 @@ public class ElevatorController extends Thread {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+	}
+
+	private void doorAction() throws InterruptedException {
+		addMessage(new Message('d', elevator, 1, 0));
+		Thread.sleep(2000);
+		addMessage(new Message('d', elevator, -1, 0));
+		Thread.sleep(1000);
 	}
 
 	public synchronized boolean getRun() {
@@ -115,6 +120,23 @@ public class ElevatorController extends Thread {
 
 	public synchronized void setFloor(double floor) {
 		this.floor = floor;
+	}
+
+	public synchronized int getDirection() {
+		return direction;
+	}
+
+	public synchronized void setDirection(int direction) {
+		this.direction = direction;
+	}
+
+	public synchronized double getTargetFloor() {
+		return targetFloor;
+	}
+
+	public synchronized double setTargetFloor(double targetFloor) {
+		this.targetFloor = targetFloor;
+		return targetFloor;
 	}
 
 }

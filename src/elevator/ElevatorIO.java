@@ -381,7 +381,7 @@ public class ElevatorIO extends Thread {
   public double whereIs(int number) throws IllegalParamException {
     if( number <= 0 || number > numberOfElevators)
       throw new IllegalParamException();
-    return allElevators[number - 1].Getpos();
+    return allElevators[number - 1].Getpos(); 
   }
   // used by RMI
   /**

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 
@@ -33,7 +34,6 @@ public class MasterController extends Thread {
 				in = new BufferedReader(new InputStreamReader(
 						s.getInputStream()));
 				out = new PrintWriter(s.getOutputStream(), true);
-				s.setSoTimeout(50);
 				doit2();
 			} catch (UnknownHostException e) {
 				continue;
@@ -44,6 +44,7 @@ public class MasterController extends Thread {
 		}
 	}
 
+	@SuppressWarnings("unused")
 	private void doit() {
 		new Thread(new Runnable() {
 
@@ -70,7 +71,8 @@ public class MasterController extends Thread {
 			}
 	}
 
-	private void doit2() {
+	private void doit2() throws SocketException {
+		s.setSoTimeout(50);
 		System.err.println("Controller starts.");
 		for (int i = 0; i <= Elevators.numberOfElevators; i++) {
 			controllers.add(new ElevatorController(i));
