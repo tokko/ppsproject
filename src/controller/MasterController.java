@@ -101,7 +101,7 @@ public class MasterController extends Thread {
 					char type = message[0].charAt(0);
 					int elevator = Integer.valueOf(message[1]);
 					double modifier = Double.valueOf(message[2]);
-					System.err.println("MESSAGE FROM ELEVATOR: "+type + " " + elevator + " " + modifier);
+					//System.err.println("MESSAGE FROM ELEVATOR: "+type + " " + elevator + " " + modifier);
 					if(type == 'b'){
 						new Assigner((int)elevator, (int)modifier).start();
 						continue;
@@ -136,7 +136,8 @@ public class MasterController extends Thread {
 					break;
 				}
 			}
-			Message m = new Message('p', e.getElevator(), floor, floor);
+			//Message m = new Message('p', e.getElevator(), floor, floor);
+			Message m = new Message('p', 2313, floor, floor);
 			System.out.println(m);
 			e.postMessage(m);
 		}
