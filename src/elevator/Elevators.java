@@ -5,6 +5,8 @@ import java.awt.event.*;
 import java.net.*;
 import java.io.*;
 
+import controller.MasterController;
+
 /**
  * Title:        Green Elevator
  * Description:  Green Elevator, 2G1915
@@ -192,278 +194,279 @@ import java.io.*;
  */
 
 public class Elevators {
-/**
- * Maximum possible number of elevators = 5
- */
-  public final static int MaxNumberOfElevators = 5;
-  /**
-   * Maximum possible number of the top floor = 6
-   */
-  public final static int MaxTopFloor = 6;
-  /**
-   * Default number of elevators = 1
-   */
-  public final static int DefaultNumberOfElevators = 1;
-  /**
-   * Default top floor number = 2
-   */
-  public final static int DefaultTopFloor = 2;
-  /**
-   * System "end-of-line" character. Defaults to "\n".
-   */
-  public final static String EOL = System.getProperty("line.separator", "\n");
-  /**
-   * A contant (32000) that specifies the special "floor number" associated
-   * with the Stop inside panel button.
-   */
-  public final static int SPECIAL_FOR_STOP = 32000;
-  /**
-   * The opcode of the "open door" command sent to a door, for example "d 1 1"
-   * (open the door of the 1st elevator)
-   */
-  public final static int OPEN = 1;
-  /**
-   * The opcode of the "close door" command sent to a door, for example, "d 1 -1"
-   * (close the door of the 1st elevator)
-   */
-  public final static int CLOSE = -1;
-  /**
-   * The code of the "stop motor" command sent to a motor, for example "m 1 0"
-   * (stop the 1st elevator)
-   */
-  public final static int STOP = 0;
-  /**
-   * The code of the "move upwards" command sent to a motor, for example "m 1 1"
-   * (start moving the 1st elevator upwards)
-   */
-  public static final int UP = 1;
-  /**
-   * The code of the "move downwards" command sent to a motor, for example "m 1 -1"
-   * (start moving the 1st elevator downwards)
-   */
-  public static final int DOWN = -1;
-  /**
-   * Default port for input/output via a TCP socket = 4711
-   */
-  public static final int defaultPort = 4711;
-  /**
-   * Number of elevators. Defaults to 1. Can be changed with the "-number n" command line
-   * argument
-   */
-  public static int numberOfElevators = DefaultNumberOfElevators;
-  /**
-   * The number of the top floor to be displayed. Defaults to 2. Can be changed with the
-   * "-top f" command line argument
-   */
-  public static int topFloor = DefaultTopFloor;
-  /**
-   * The number of floors. Computed as (top - bottom + 1) after parsing input parameters
-   */
-  public static int numberOfFloors;
+	/**
+	 * Maximum possible number of elevators = 5
+	 */
+	public final static int MaxNumberOfElevators = 5;
+	/**
+	 * Maximum possible number of the top floor = 6
+	 */
+	public final static int MaxTopFloor = 6;
+	/**
+	 * Default number of elevators = 1
+	 */
+	public final static int DefaultNumberOfElevators = 1;
+	/**
+	 * Default top floor number = 2
+	 */
+	public final static int DefaultTopFloor = 2;
+	/**
+	 * System "end-of-line" character. Defaults to "\n".
+	 */
+	public final static String EOL = System.getProperty("line.separator", "\n");
+	/**
+	 * A contant (32000) that specifies the special "floor number" associated
+	 * with the Stop inside panel button.
+	 */
+	public final static int SPECIAL_FOR_STOP = 32000;
+	/**
+	 * The opcode of the "open door" command sent to a door, for example "d 1 1"
+	 * (open the door of the 1st elevator)
+	 */
+	public final static int OPEN = 1;
+	/**
+	 * The opcode of the "close door" command sent to a door, for example, "d 1 -1"
+	 * (close the door of the 1st elevator)
+	 */
+	public final static int CLOSE = -1;
+	/**
+	 * The code of the "stop motor" command sent to a motor, for example "m 1 0"
+	 * (stop the 1st elevator)
+	 */
+	public final static int STOP = 0;
+	/**
+	 * The code of the "move upwards" command sent to a motor, for example "m 1 1"
+	 * (start moving the 1st elevator upwards)
+	 */
+	public static final int UP = 1;
+	/**
+	 * The code of the "move downwards" command sent to a motor, for example "m 1 -1"
+	 * (start moving the 1st elevator downwards)
+	 */
+	public static final int DOWN = -1;
+	/**
+	 * Default port for input/output via a TCP socket = 4711
+	 */
+	public static final int defaultPort = 4711;
+	/**
+	 * Number of elevators. Defaults to 1. Can be changed with the "-number n" command line
+	 * argument
+	 */
+	public static int numberOfElevators = DefaultNumberOfElevators;
+	/**
+	 * The number of the top floor to be displayed. Defaults to 2. Can be changed with the
+	 * "-top f" command line argument
+	 */
+	public static int topFloor = DefaultTopFloor;
+	/**
+	 * The number of floors. Computed as (top - bottom + 1) after parsing input parameters
+	 */
+	public static int numberOfFloors;
 
-  protected Elevator[] allElevators;
-  /**
-   * A boolean option that indicates whether a TCP socket(s) must be open for for input/output.
-   * Defaults to false. Set by "-tcp" command line option
-   */
-  protected static boolean tcp = false;
-  /**
-   * A boolean option that indicates whether an object with the getAllImpl class must
-   * be created and its remote reference (stub with the GetAll remote interface)
-   * must be bound to the "GetAll" name
-   * at the rmi registry so that client(s)
-   * (controller(s) can obtain the GetAll reference (stub) from
-   * the rmiregitry for controlling elevators via Java RMI. The clients should
-   * not look up for this reference explicitly, but rather use static methods
-   * of the MakeAll class to get remote references to elevator components with
-   * suitable interfaces.
-   * The option defaults to false (do not use RMI). Set by "-rmi" command line option
-   */
-  protected static boolean rmi = false;
-  /**
-   * The input port number to which a TCP socket must be bound to provide an input stream
-   * for reading control commands if the application starts with -tcp option.
-   * Defaults to 4711. Can be changed with "-tcpin port" command line argument.
-   */
-  protected static int inPort = defaultPort;
-  /**
-   * The output port number to which a TCP socket must be bound to provide an output stream
-   * for printing action commands from buttons and current positions of elevators
-   * if the application starts with -tcp option.
-   * Defaults to 4711. Can be changed with "-tcpout port" command line argument.
-   */
-  protected static int outPort = defaultPort;
-  /**
-   * The name of the host where rmiregitry provides Naming service. Defaults to
-   * "localhost". Can be changed by calling the <code>init</code> static method
-   * of the <code>MakeAll</code> class.
-   */
-  protected static String rmiHost = "localhost";
-  /**
-   * The number of the port on which rmiregitry provides Naming service. Defaults to
-   * 1099. Can be changed by calling the <code>init</code> static method
-   * of the <code>MakeAll</code> class.
-   */
-  protected static int rmiPort = 1099;
-  /**
-   * The boolen variable that indicates whether to print postions of moving
-   * elevators to the standard output. Defaults to true (do print).
-   */
-  protected static boolean posOutput = true;
-  /**
-   * A movement step of an elevator, i.e precision of the model. Defaults to 0.04
-   */
-  public static double step = (double)0.04;
-  /**
-   * Creates an instance of <code>Elevators</code>, parses the input parameters,
-   * creates the "Model" of the application (array of objects
-   * with the <code>Elevator</code> class) and the "View" of the application
-   * (an object of the <code>ElevatorGUI</code> class).
-   *
-   */
-  public Elevators(String[] args) {
-    initOptions(args);
-    numberOfFloors = topFloor + 1;
-    if (numberOfFloors > MaxTopFloor + 1) {
-      System.err.println("illegal parameters" + EOL + USAGE);
-      System.exit(1);
-    } else
-      System.err.println("number of elevators = "+ numberOfElevators + EOL +
-        "number of floors = " + numberOfFloors + EOL);
-    allElevators = new Elevator[numberOfElevators + 1];
-    for (int i = 0; i < numberOfElevators; i++) {
-      allElevators[i] = new Elevator(i + 1);
-    }
-    ElevatorGUI window1 =  new ElevatorGUI("Elevator", this);
-  }
-  /**
-   * Command line options of the Elevators application
-   */
-  private final static String[] opts  = {
-    "-h",
-    "-help",
-    "-number",
-    "-top",
-    "-tcpin",
-    "-tcpout",
-    "-tcp",
-    "-rmiHost",
-    "-rmiPort",
-    "-rmi",
-    "-nopos",
-    "-precision"
-  };
-  /**
-   * Number of accepted command line options
-   */
-  private final static int NOA = opts.length;
-  /**
-   * The usage message to be printed on the -help request
-   */
-  public static final String USAGE =
-    "USAGE: java Elevators [-number numberOfElevators] [-top topFloor] [-tcp] [-tcpin portForInput] [-tcpout portForOutput] [-rmi] [-nopos] [-precision value]" + EOL +
-    "max number of elevators is " + MaxNumberOfElevators + EOL +
-    "max number of floors (including BV) is " + (MaxTopFloor + 1);
+	protected Elevator[] allElevators;
+	/**
+	 * A boolean option that indicates whether a TCP socket(s) must be open for for input/output.
+	 * Defaults to false. Set by "-tcp" command line option
+	 */
+	protected static boolean tcp = false;
+	/**
+	 * A boolean option that indicates whether an object with the getAllImpl class must
+	 * be created and its remote reference (stub with the GetAll remote interface)
+	 * must be bound to the "GetAll" name
+	 * at the rmi registry so that client(s)
+	 * (controller(s) can obtain the GetAll reference (stub) from
+	 * the rmiregitry for controlling elevators via Java RMI. The clients should
+	 * not look up for this reference explicitly, but rather use static methods
+	 * of the MakeAll class to get remote references to elevator components with
+	 * suitable interfaces.
+	 * The option defaults to false (do not use RMI). Set by "-rmi" command line option
+	 */
+	protected static boolean rmi = false;
+	/**
+	 * The input port number to which a TCP socket must be bound to provide an input stream
+	 * for reading control commands if the application starts with -tcp option.
+	 * Defaults to 4711. Can be changed with "-tcpin port" command line argument.
+	 */
+	protected static int inPort = defaultPort;
+	/**
+	 * The output port number to which a TCP socket must be bound to provide an output stream
+	 * for printing action commands from buttons and current positions of elevators
+	 * if the application starts with -tcp option.
+	 * Defaults to 4711. Can be changed with "-tcpout port" command line argument.
+	 */
+	protected static int outPort = defaultPort;
+	/**
+	 * The name of the host where rmiregitry provides Naming service. Defaults to
+	 * "localhost". Can be changed by calling the <code>init</code> static method
+	 * of the <code>MakeAll</code> class.
+	 */
+	protected static String rmiHost = "localhost";
+	/**
+	 * The number of the port on which rmiregitry provides Naming service. Defaults to
+	 * 1099. Can be changed by calling the <code>init</code> static method
+	 * of the <code>MakeAll</code> class.
+	 */
+	protected static int rmiPort = 1099;
+	/**
+	 * The boolen variable that indicates whether to print postions of moving
+	 * elevators to the standard output. Defaults to true (do print).
+	 */
+	protected static boolean posOutput = true;
+	/**
+	 * A movement step of an elevator, i.e precision of the model. Defaults to 0.04
+	 */
+	public static double step = (double)0.04;
+	/**
+	 * Creates an instance of <code>Elevators</code>, parses the input parameters,
+	 * creates the "Model" of the application (array of objects
+	 * with the <code>Elevator</code> class) and the "View" of the application
+	 * (an object of the <code>ElevatorGUI</code> class).
+	 *
+	 */
+	public Elevators(String[] args) {
+		initOptions(args);
+		numberOfFloors = topFloor + 1;
+		if (numberOfFloors > MaxTopFloor + 1) {
+			System.err.println("illegal parameters" + EOL + USAGE);
+			System.exit(1);
+		} else
+			System.err.println("number of elevators = "+ numberOfElevators + EOL +
+					"number of floors = " + numberOfFloors + EOL);
+		allElevators = new Elevator[numberOfElevators + 1];
+		for (int i = 0; i < numberOfElevators; i++) {
+			allElevators[i] = new Elevator(i + 1);
+		}
+		ElevatorGUI window1 =  new ElevatorGUI("Elevator", this);
+	}
+	/**
+	 * Command line options of the Elevators application
+	 */
+	private final static String[] opts  = {
+		"-h",
+		"-help",
+		"-number",
+		"-top",
+		"-tcpin",
+		"-tcpout",
+		"-tcp",
+		"-rmiHost",
+		"-rmiPort",
+		"-rmi",
+		"-nopos",
+		"-precision"
+	};
+	/**
+	 * Number of accepted command line options
+	 */
+	private final static int NOA = opts.length;
+	/**
+	 * The usage message to be printed on the -help request
+	 */
+	public static final String USAGE =
+			"USAGE: java Elevators [-number numberOfElevators] [-top topFloor] [-tcp] [-tcpin portForInput] [-tcpout portForOutput] [-rmi] [-nopos] [-precision value]" + EOL +
+			"max number of elevators is " + MaxNumberOfElevators + EOL +
+			"max number of floors (including BV) is " + (MaxTopFloor + 1);
 
-  private void initOptions(String[] args) {
-    int argc = args.length;
-    if (argc > 0) {
-      for (int currentOpt = 0; currentOpt < NOA; currentOpt++) {
-        for (int currentArg = 0; currentArg < argc; currentArg++) {
-          if (args[currentArg].equalsIgnoreCase(opts[currentOpt])) {
-            int number = 0;
-            double fnumber = (double)0.0;
-            boolean isInteger = false;
-            boolean isString = false;
-            boolean isdouble = false;
-            if (currentArg + 1 < argc)
-              try {
-                number = Integer.parseInt(args[currentArg + 1]);
-                isInteger = true;
-                currentArg++;
-              } catch (NumberFormatException e) {
-                try {
-                  fnumber = (double)(Float.parseFloat(args[currentArg + 1]));
-                  isdouble = true;
-                } catch (NumberFormatException e1) {
-                  isString = true;
-                }
-              }
-            switch (currentOpt) {
-              case 0: // -help
-              case 1:
-                System.err.println(USAGE);
-                System.exit(0);
-              case 2: //-number numberOfElevators
-                if (isInteger && number > 0 && number <= MaxNumberOfElevators) {
-                  numberOfElevators = number;
-                  break;
-                } else {
-                  System.err.println("illegal parameters" + EOL + USAGE);
-                  System.exit(1);
-                }
-              case 3: // -top topFloor
-                if (isInteger && number <= MaxTopFloor && number >= 1) {
-                  topFloor = number;
-                  break;
-                } else {
-                  System.err.println("illegal parametersr" + EOL + USAGE);
-                  System.exit(1);
-                }
-              case 4:  {// -tcpin inPort (io via TCP socket connection)
-                tcp = true;
-                if (isInteger && number > 0) inPort = number;
-                break;
-              }
-              case 5:  {// -tcpout outPort (io via TCP socket connection)
-                tcp = true;
-                if (isInteger && number > 0) outPort = number;
-                break;
-              }
-              case 6: { // -tcp (io via TCP socket connections)
-                tcp = true;
-                break;
-              }
-              case 7: { // -rmiHost rmiHost (io via RMI interface) does not really work
-                rmi = true;
-                if (isString) rmiHost = args[currentArg + 1];
-                break;
-              }
-              case 8: { // -rmiPort rmiPort (io via RMI interface) does not really work
-                rmi = true;
-                if (isInteger && number > 0) rmiPort = number;
-                break;
-              }
-              case 9: { // -rmi (io via RMI interface)
-                rmi = true;
-                break;
-              }
-              case 10: { // -nopos (do not print position of movind elevators)
-                posOutput = false;
-                break;
-              }
-              case 11: { // -precision value (precision of the model in floor per time step
-                if (isdouble && fnumber > 0.0) step = fnumber;
-                else {
-                  System.err.println("illegal parameters" + EOL + USAGE);
-                  System.exit(1);
-                }
-              }
-              default: ;
-            }
-          }
-        }
-      }
-    }
-  }
-  /**
-   * The main entry to the application. Creates the <code>Elevators</code>
-   * object that holds most of static global parameters and constants, as well as
-   * the reference to the "Model" of the application, i.e. array of
-   * objects with the <code>Elevator</code> class.
-   */
-  public static void main(String[] args) {
-    Elevators elevators = new Elevators(args);
-  }
+	private void initOptions(String[] args) {
+		int argc = args.length;
+		if (argc > 0) {
+			for (int currentOpt = 0; currentOpt < NOA; currentOpt++) {
+				for (int currentArg = 0; currentArg < argc; currentArg++) {
+					if (args[currentArg].equalsIgnoreCase(opts[currentOpt])) {
+						int number = 0;
+						double fnumber = (double)0.0;
+						boolean isInteger = false;
+						boolean isString = false;
+						boolean isdouble = false;
+						if (currentArg + 1 < argc)
+							try {
+								number = Integer.parseInt(args[currentArg + 1]);
+								isInteger = true;
+								currentArg++;
+							} catch (NumberFormatException e) {
+								try {
+									fnumber = (double)(Float.parseFloat(args[currentArg + 1]));
+									isdouble = true;
+								} catch (NumberFormatException e1) {
+									isString = true;
+								}
+							}
+						switch (currentOpt) {
+						case 0: // -help
+						case 1:
+							System.err.println(USAGE);
+							System.exit(0);
+						case 2: //-number numberOfElevators
+						if (isInteger && number > 0 && number <= MaxNumberOfElevators) {
+							numberOfElevators = number;
+							break;
+						} else {
+							System.err.println("illegal parameters" + EOL + USAGE);
+							System.exit(1);
+						}
+						case 3: // -top topFloor
+							if (isInteger && number <= MaxTopFloor && number >= 1) {
+								topFloor = number;
+								break;
+							} else {
+								System.err.println("illegal parametersr" + EOL + USAGE);
+								System.exit(1);
+							}
+						case 4:  {// -tcpin inPort (io via TCP socket connection)
+							tcp = true;
+							if (isInteger && number > 0) inPort = number;
+							break;
+						}
+						case 5:  {// -tcpout outPort (io via TCP socket connection)
+							tcp = true;
+							if (isInteger && number > 0) outPort = number;
+							break;
+						}
+						case 6: { // -tcp (io via TCP socket connections)
+							tcp = true;
+							break;
+						}
+						case 7: { // -rmiHost rmiHost (io via RMI interface) does not really work
+							rmi = true;
+							if (isString) rmiHost = args[currentArg + 1];
+							break;
+						}
+						case 8: { // -rmiPort rmiPort (io via RMI interface) does not really work
+							rmi = true;
+							if (isInteger && number > 0) rmiPort = number;
+							break;
+						}
+						case 9: { // -rmi (io via RMI interface)
+							rmi = true;
+							break;
+						}
+						case 10: { // -nopos (do not print position of movind elevators)
+							posOutput = false;
+							break;
+						}
+						case 11: { // -precision value (precision of the model in floor per time step
+							if (isdouble && fnumber > 0.0) step = fnumber;
+							else {
+								System.err.println("illegal parameters" + EOL + USAGE);
+								System.exit(1);
+							}
+						}
+						default: ;
+						}
+					}
+				}
+			}
+		}
+	}
+	/**
+	 * The main entry to the application. Creates the <code>Elevators</code>
+	 * object that holds most of static global parameters and constants, as well as
+	 * the reference to the "Model" of the application, i.e. array of
+	 * objects with the <code>Elevator</code> class.
+	 */
+	public static void main(String[] args) {
+		new MasterController().start();
+		Elevators elevators = new Elevators(args);
+	}
 
 }
