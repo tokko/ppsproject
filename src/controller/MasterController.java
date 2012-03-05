@@ -75,7 +75,7 @@ public class MasterController extends Thread {
 		s.setSoTimeout(50);
 		System.err.println("Controller starts.");
 		for (int i = 0; i <= Elevators.numberOfElevators; i++) {
-			controllers.add(new ElevatorController(i));
+			controllers.add(new ElevatorController(i+1));
 			controllers.get(i).start();
 		}
 		new Thread(new Runnable() {
@@ -109,7 +109,7 @@ public class MasterController extends Thread {
 					Message msg = new Message(type, elevator, (int) modifier,
 							modifier);
 					System.err.println("Posting message: " + msg);
-					controllers.get(elevator).postMessage(msg);
+					controllers.get(elevator-1).postMessage(msg);
 				} catch (Exception e) {
 				}
 
