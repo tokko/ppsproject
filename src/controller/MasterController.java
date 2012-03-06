@@ -72,9 +72,8 @@ public class MasterController extends Thread {
 	}
 
 	private void doit2() throws SocketException {
-		s.setSoTimeout(50);
 		System.err.println("Controller starts.");
-		for (int i = 0; i <= Elevators.numberOfElevators; i++) {
+		for (int i = 0; i < Elevators.numberOfElevators; i++) {
 			controllers.add(new ElevatorController(i+1));
 			controllers.get(i).start();
 		}
@@ -84,7 +83,6 @@ public class MasterController extends Thread {
 					for (ElevatorController c : controllers) {
 						Message msg = null;
 						if ((msg = c.retrieveMessage()) != null) {
-							System.out.println("Retrieving message: " + msg);
 							out.println(msg.toString());
 						}
 					}
@@ -101,14 +99,12 @@ public class MasterController extends Thread {
 					char type = message[0].charAt(0);
 					int elevator = Integer.valueOf(message[1]);
 					double modifier = Double.valueOf(message[2]);
-					System.err.println("MESSAGE FROM ELEVATOR: "+type + " " + elevator + " " + modifier);
 					if(type == 'b'){
 						new Assigner((int)elevator, (int)modifier).start();
 						continue;
 					}
 					Message msg = new Message(type, elevator, (int) modifier,
 							modifier);
-					System.err.println("Posting message: " + msg);
 					controllers.get(elevator-1).postMessage(msg);
 				} catch (Exception e) {
 				}
@@ -129,16 +125,39 @@ public class MasterController extends Thread {
 
 		@Override
 		public void run() {
-			ElevatorController e = controllers.get(0);
-			for (ElevatorController controller : controllers) {
-				if (controller.getDirection() == 0) {
-					e = controller;
-					break;
+			ElevatorController closestEmpty = null, closestJoin = null;
+			double costEmpty, costJoin;
+			costEmpty = costJoin = Double.POSITIVE_INFINITY;
+			for(boolean first = true; closestEmpty == null && closestJoin == null; first = false) {
+				if(!first) Thread.yield();
+				for (ElevatorController c : controllers) {
+					if (c.getDirection() == direction
+							&& c.getDirection() * c.getFloor() < c
+							.getDirection() * floor) {
+						double thisCost = Math.abs(floor - c.getFloor()) + 2
+								* c.getTaskQueueSize();
+						if (thisCost < costJoin) {
+							costJoin = thisCost;
+							closestJoin = c;
+						}
+					}
+					if (c.getTaskQueueSize() == 0 && c.getInboxSize() == 0) {
+						double thisCost = Math.abs(floor - c.getFloor()) + 2
+								* c.getTaskQueueSize();
+						if (thisCost < costEmpty) {
+							costEmpty = thisCost;
+							closestEmpty = c;
+						}
+					}
 				}
 			}
-			Message m = new Message('p', e.getElevator(), floor, floor);
-			System.out.println(m);
-			e.postMessage(m);
+			ElevatorController cf = closestEmpty;
+			if(closestJoin != null)
+				cf = closestJoin;
+			Message m = new Message('p', cf.getElevator(), floor, floor);
+			System.out.println("ASSIGNER MESSAGE: " + m);
+			cf.postMessage(m);
+
 		}
 	}
 }
