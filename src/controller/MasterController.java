@@ -74,7 +74,7 @@ public class MasterController extends Thread {
 	private void doit2() throws SocketException {
 		System.err.println("Controller starts.");
 		for (int i = 0; i < Elevators.numberOfElevators; i++) {
-			controllers.add(new ElevatorController(i+1));
+			controllers.add(new ElevatorController(i + 1));
 			controllers.get(i).start();
 		}
 		new Thread(new Runnable() {
@@ -96,16 +96,18 @@ public class MasterController extends Thread {
 				String[] message = null;
 				try {
 					message = in.readLine().split(" ");
+					// System.out.println("Message is: " + message[0] + " " +
+					// message[1] + " " + message[2]);
 					char type = message[0].charAt(0);
 					int elevator = Integer.valueOf(message[1]);
 					double modifier = Double.valueOf(message[2]);
-					if(type == 'b'){
-						new Assigner((int)elevator, (int)modifier).start();
+					if (type == 'b') {
+						new Assigner((int) elevator, (int) modifier).start();
 						continue;
 					}
 					Message msg = new Message(type, elevator, (int) modifier,
 							modifier);
-					controllers.get(elevator-1).postMessage(msg);
+					controllers.get(elevator - 1).postMessage(msg);
 				} catch (Exception e) {
 				}
 
@@ -128,12 +130,23 @@ public class MasterController extends Thread {
 			ElevatorController closestEmpty = null, closestJoin = null;
 			double costEmpty, costJoin;
 			costEmpty = costJoin = Double.POSITIVE_INFINITY;
-			for(boolean first = true; closestEmpty == null && closestJoin == null; first = false) {
-				if(!first) Thread.yield();
+			for (boolean first = true; closestEmpty == null
+					&& closestJoin == null; first = false) {
+				if (!first)
+					Thread.yield();
+
 				for (ElevatorController c : controllers) {
-					if (c.getDirection() == direction
+					// Join to a current tour
+					if (c.getIntendedDirection() == direction
 							&& c.getDirection() * c.getFloor() < c
-							.getDirection() * floor) {
+									.getDirection() * floor) {
+						double thisCost = Math.abs(floor - c.getFloor()) + 2
+								* c.getTaskQueueSize();
+						if (thisCost < costJoin) {
+							costJoin = thisCost;
+							closestJoin = c;
+						}
+					}else if (c.getIntendedDirection()!=c.getDirection() && c.getIntendedDirection()==direction){
 						double thisCost = Math.abs(floor - c.getFloor()) + 2
 								* c.getTaskQueueSize();
 						if (thisCost < costJoin) {
@@ -141,6 +154,8 @@ public class MasterController extends Thread {
 							closestJoin = c;
 						}
 					}
+
+					// Assign Empty ELevator
 					if (c.getTaskQueueSize() == 0 && c.getInboxSize() == 0) {
 						double thisCost = Math.abs(floor - c.getFloor()) + 2
 								* c.getTaskQueueSize();
@@ -152,8 +167,11 @@ public class MasterController extends Thread {
 				}
 			}
 			ElevatorController cf = closestEmpty;
-			if(closestJoin != null)
+			if (closestJoin != null)
 				cf = closestJoin;
+			else
+				cf.setIntendedDirection(direction);
+
 			Message m = new Message('p', cf.getElevator(), floor, floor);
 			System.out.println("ASSIGNER MESSAGE: " + m);
 			cf.postMessage(m);

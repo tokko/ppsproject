@@ -12,9 +12,11 @@ public class ElevatorController extends Thread {
 	private double targetFloor;
 	private final int elevator;
 	private int direction;
-
+	private int intendedDirection;
+	
 	public ElevatorController(int elevator) {
 		setDirection(0);
+		setIntendedDirection(0);
 		floor = setTargetFloor(0);
 		this.elevator = elevator;
 		taskQueue = new ArrayList<Message>();
@@ -32,6 +34,12 @@ public class ElevatorController extends Thread {
 				Message m = peekQueue();
 				if (m != null) {
 					setTargetFloor(m.getTargetFloor());
+					if (getFloor() >= getTargetFloor() - 0.05 && getFloor() <= getTargetFloor() + 0.05) {
+						doorAction();
+						pollQueue();
+						setDirection(0);
+						continue;
+					}
 					decideMove();
 				}
 				Message msg = pollMessage();
@@ -56,7 +64,6 @@ public class ElevatorController extends Thread {
 						if (Math.abs(getFloor() - getTargetFloor()) < 0.05) {
 							addMessage(new Message('m', getElevator(), 0, 0));
 							doorAction();
-							
 							pollQueue();
 							setDirection(0);
 						}
@@ -75,16 +82,22 @@ public class ElevatorController extends Thread {
 
 	public synchronized void addQueue(Message msg) {
 		System.out.println("Adding task: " + msg);
-		for (int i = 0; i < taskQueue.size(); i++) {
-			if (msg.getcurPos() == taskQueue.get(i).getcurPos())
-				return;
-			if (getDirection() * msg.getcurPos() < getDirection()
-					* taskQueue.get(i).getcurPos()) {
-				taskQueue.add(i, msg);
-				return;
+		
+		if (!(getDirection() * msg.getcurPos() < getDirection()
+						* getFloor())) {
+			for (int i = 0; i < taskQueue.size(); i++) {
+				//			if (msg.getcurPos() == taskQueue.get(i).getcurPos())
+				//				return;
+				if (getDirection() * msg.getcurPos() < getDirection()
+						* taskQueue.get(i).getcurPos()) {
+					taskQueue.add(i, msg);
+					return;
+				}
 			}
+			taskQueue.add(msg);
+		}else{
+			System.err.println("The Elevator is not heading that way, douche.");
 		}
-		taskQueue.add(msg);
 	}
 
 	public synchronized int getInboxSize(){
@@ -100,6 +113,7 @@ public class ElevatorController extends Thread {
 
 	public synchronized Message pollQueue() {
 //		System.err.println("Polling taskQueue.");
+		if(taskQueue.size() == 1) setIntendedDirection(0);
 		return taskQueue.isEmpty() ? null : taskQueue.remove(0);
 	}
 
@@ -176,6 +190,14 @@ public class ElevatorController extends Thread {
 
 	public int getElevator() {
 		return elevator;
+	}
+
+	public synchronized int getIntendedDirection() {
+		return intendedDirection;
+	}
+
+	public synchronized void setIntendedDirection(int intendedDirection) {
+		this.intendedDirection = intendedDirection;
 	}
 
 }
