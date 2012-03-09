@@ -1,4 +1,3 @@
 \section{Achievements}
-\begin{enumerate}
-\item hej
-\end{enumerate}
+The task was to minimize service time and elevator movement. It is not possible to do both, one must be sacrificed to benefit the others. The controllers cannot make accurate computations since it may not observe the entire theater. The elevator does not know how many people there are in the elevator, nor how many wish to embark. Nor is it possible for the controller to know how far a person (or group of people) want to travel when they summon they summon the elevator. The controller only knows the desired direction.\newline
+Therefore we chose to, if possible, combine trips with the elevator. For instance, one person travels from the second to the fourth floor, and someone summons the elevator to travel upwards from the third floor. Then the elevator already traveling upwards will gather this request and pause at the third floor. This way the goal of minimizing elevator movement (by having ''required moves'' overlap, and minimize service time by not locking an additional elevator. 
