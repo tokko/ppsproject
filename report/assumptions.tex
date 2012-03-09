@@ -1,0 +1,10 @@
+\section{Assumptions \& Simplifications}
+\begin{itemize}
+\item The panel button 'Stop' is emergency halt. The elevator is not supposed to restart after a stop event without maintenance. If it is restarted, erratic behavior will be displayed.
+\item It is assumed that it takes twice the time to open and close the doors than it takes to travel one floor\footnote{As observed in the elevators in the E-building, KTH Campus Valhallavägen.}.
+\item When a button is pressed (not a panel button), the controllers are told only which direction is desired, not the exact destination. 
+\item The controllers does not know how many floors there is. It is assumed that a floor request from the elevators will always be within the bounds of the building i.e it is not possible to press the button for the seventh floor in a six-story building.
+\item There is no way to determine how many people are in the elevator at any one time. 
+Example:\newline
+Five people embark on an elevator on the second floor, and request traveling to the fourth floor. Whilst they travel from the second to third floor, a lone man presses the up button on the third floor. Assume it takes thirty seconds to traverse one floor, and thirty seconds to open the doors, admit passengers and close them again. If the elevator pause on the third floor to admit the lone man, it wastes two and a half minutes of the passengers time (thirty seconds each). If it instead travel to the fourth floor and let them disembark before going down to the third floor to pick up the lone man it would only waste a minute and a half (the lone man waits thirty seconds for the elevator to travel from the third floor to the fourth floor, thirty seconds while they disembark and thirty seconds for the elevator to return to his floor.\newline The controllers will completely disregard this and pick up the lone man (it could be a hundred men waiting, the controllers know only that the button was pressed once).
+\end{itemize}

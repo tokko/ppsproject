@@ -2,7 +2,9 @@
 % Att vi vill ha ett dokument som ser ut som en teknisk artikel, på a4-papper, tvåsidigt med 10 punkters font.
 \documentclass[a4paper,12pt,twoside]{article}
 % sidmarginaler
+\usepackage
 \usepackage{tabularx}
+\usepackage{cref}
 \usepackage[inner=3cm,top=3cm,outer=2cm,bottom=3cm]{geometry}
 % svenska avstavningsregler
 \usepackage[swedish]{babel}
@@ -56,15 +58,15 @@
 \usepackage{algorithm}
 
 % stoppa in ditt namn här nedanför
-\def\myName{Andreas Gustafsson}
+\def\myName{Andreas Gustafsson || andreg@kth.se\\ Mattias Knutsson || matknu@kth.se}
 
 % kurskod här (skriver in indans kod som default)
-\def\courseCode{kurskod}
+\def\courseCode{ID1217}
 % kursnamn här (återigen inda som default)
-\def\courseName{kursnamn}
+\def\courseName{Concurrent Programming}
 
 % stoppa in numret på inlämningen här nedanför
-\def\assignmentNumber{1}
+\def\assignmentNumber{Project}
 
 % stoppa in datum för när du skriver den här inlämningen här
 %\def\writtenDate{datum}
@@ -75,13 +77,13 @@
 \pagestyle{fancy}\headheight 13pt
 \fancyfoot{}
 % sidhuvud, vänster sida, fyll i ditt namn här
-%\lhead{\courseCode - \myName}
+\lhead{\myName}
 % sidhuvud, höger sida, fyll i vilken uppgift detta gäller
-\rhead{uppgift}
+\rhead{Project}
 % sidnumrering på vänster sida för jämna sidnummer, höger sida för ojämna sidnummer
 \fancyfoot[LE,RO]{\thepage}
 
-\title{skapa titel!}
+\title{Green Elevator}
 \date{\writtenDate}
 \author{\myName}
 \begin{document}
@@ -93,6 +95,18 @@
 \thispagestyle{empty}\cfoot{}
 \clearpage
 \setcounter{page}{1}
-\section{foo}
 
+\input{assumptions.tex}
+\cleardoublepage
+\input{application.tex}
+\cleardoublepage
+\input{algorithm.tex}
+\cleardoublepage
+\input{implementation.tex}
+\cleardoublepage}
+\input{environments.tex}
+\cleardoublepage
+\input{achievments.tex}
+\cleardoublpage
+\input{appendix.tex}
 \end{document}

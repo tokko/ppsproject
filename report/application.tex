@@ -1,0 +1,13 @@
+\section{Application}
+The application that has been added to the Elevators project consists of three Java classes; MasterController.java, ElevatorController.java and Message.java.\newline
+\subsection{MasterController.java}
+\label{app:master}
+MasterController receives messages as strings over TCP sockets from the elevators, converts them into messages as described in \cref{app:message} and forward them to the correct ElevatorController, and receives messages, as described in \cref{app:message} from the ElevatorControllers and forward them to the elevators. The only ''actual'' work the MasterController does is to allocate floor button presses to an elevator, for more information see \cref{alg:sel}.
+
+\subsection{ElevatorController.java}
+\label{app:controller}
+This class manages a single elevator and trusts the MasterController makes the best decisions. The class receives tasks from the Master and incorporates them into its current schedule, see \cref{alg:sched} for how this is done. The ElevatorController will send four different kinds of messages to its allotted elevator. It will send ''move in X direction'', ''stop moving'', ''open doors'' and ''close doors''. 
+
+\subsection{Message.java}
+\label{app:message}
+This class represents a multi-purpose message sent between an ElevatorController and the MasterController. When a message is received from the elevators by MasterController, the string is parsed into a Message and will remain a Message until the command is successfully accepted by the Controller. A Message may be created by the ElevatorController and sent to the Master to be converted into a string and sent back to the elevator through the socket.

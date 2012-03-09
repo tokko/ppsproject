@@ -1,0 +1,16 @@
+\section{Algorithm}
+\subsection{Elevator selection}
+\label{alg:sel}
+This algorithm is used by the master controller when a floor button is pressed and decides which elevator to server the request. The algorithm will first search for an elevator to ''join''. To ''join'' an elevator is to enter an elevator that is already heading in your direction, and has an destination past yours. For instance, an elevator is traveling to floor four from floor one, and you press the ''up'' button on floor three. The elevator will then pause at floor three to admit you, before proceeding to floor four.\newline
+If there is no elevator to join, the algorithm searches for a free elevator to send to your floor. If it finds one it will be assigned to you and others may ''join'' your ride.\newline
+If there is neither an elevator to join nor and empty, the algorithm will wait until one of the cases is true. If both are true, a ''join'' will be prioritized over assigning an empty elevator.
+
+\subsection{Floor scheduling}
+\label{alg:sched}
+This algorithm is used by each elevator controller, oblivious to what the other elevator controllers are doing, to schedule the order of floors to visit.\newline
+When a new task (a task is ''travel to floor X from the current position before open and close the doors'') is added, it goes through a series of checks to determine when it should be performed.
+\begin{enumerate}
+\item If the elevator is not moving, execute the task immediately.
+\item If the elevator is moving upwards, and the new target floor is below (if traveling upwards) or above (if traveling downwards) the elevator's current floor, the button press is discarded. This means that someone has requested to travel one direction, and then pressed a button that would cause the elevator to reverse direction. Douchebaggery is unacceptable. 
+\item If the new task is acceptable, it is placed into a queue of tasks. This queue is a priority queue that is ordered by the target floors as integers descending if the elevator is currently moving downwards and ascending if it is moving upwards. 
+\end{enumerate}

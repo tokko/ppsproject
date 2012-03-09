@@ -1,0 +1,15 @@
+\section{Implementation}
+
+\subsection{MasterController}
+This class forwards messages from the elevators to the proper ElevatorController and assigns a proper elevator and controller to a floor request (when someone on floor X request an elevator that is moving in direction Y). MasterController extends Thread, and is started from within the initialization of Elevators.
+
+\subsubsection{run()}
+Overrides the Thread.run() method. What it does is to connect to the elevators through TCP socket, opens the I/O streams and invoke the controlElevators function (see \cref{imp:controlElevators}).
+
+\subsubsection{controlElevators()}
+Main workhorse of the MasterController. It starts a thread that will repeatedly poll each controller for a message they wish to be sent to the elevators, and forward it. This thread is anonomously created by wrapping it around a runnable and started inline. Proceed into an infinite loop that reads messages from the socket, and if it is an ''p'' or ''f'' message, it is forwarded to the proper ElevatorController. If it is a ''b'' message, an Assigner (see \cref{imp:assigner}) is inline instantiated and trusted to manage the message.
+
+\subsection{Assigner}
+This transforms a ''b'' message to a ''p'' message and forwards it to the proper ElevatorController, see \cref{alg:sel} for more info about the algorithm.\newline
+Assigner extends Thread.
+
