@@ -101,14 +101,8 @@ public class MasterController extends Thread {
 					char type = message[0].charAt(0);
 					int elevator = Integer.valueOf(message[1]);
 					double modifier = Double.valueOf(message[2]);
-<<<<<<< HEAD
-					//System.err.println("MESSAGE FROM ELEVATOR: "+type + " " + elevator + " " + modifier);
-					if(type == 'b'){
-						new Assigner((int)elevator, (int)modifier).start();
-=======
 					if (type == 'b') {
 						new Assigner((int) elevator, (int) modifier).start();
->>>>>>> 13833474f6d26dab3897b9275990350828b22a73
 						continue;
 					}
 					Message msg = new Message(type, elevator, (int) modifier,
@@ -172,12 +166,6 @@ public class MasterController extends Thread {
 					}
 				}
 			}
-<<<<<<< HEAD
-			//Message m = new Message('p', e.getElevator(), floor, floor);
-			Message m = new Message('p', 2313, floor, floor);
-			System.out.println(m);
-			e.postMessage(m);
-=======
 			ElevatorController cf = closestEmpty;
 			if (closestJoin != null)
 				cf = closestJoin;
@@ -187,8 +175,6 @@ public class MasterController extends Thread {
 			Message m = new Message('p', cf.getElevator(), floor, floor);
 			System.out.println("ASSIGNER MESSAGE: " + m);
 			cf.postMessage(m);
-
->>>>>>> 13833474f6d26dab3897b9275990350828b22a73
 		}
 	}
 }
