@@ -47,7 +47,7 @@ public class ElevatorController extends Thread {
 				Message m = peekQueue();							//Looks at a the top task in the elevators quere
 				if (m != null) {									//If was a task in queue
 					setTargetFloor(m.getTargetFloor());				//Set target to top task floor
-					if (getFloor() >= getTargetFloor() - 0.05 && getFloor() <= getTargetFloor() + 0.05) { //If correct floor is reached
+					if (getFloor() >= getTargetFloor() - 0.05 && getFloor() <= getTargetFloor() + 0.05) { //If you already are on the correct floor
 						doorAction();								//Open the doors
 						pollQueue();								//Remove the task from the queue 
 						setDirection(0);							//Set the elevator to not move
@@ -66,7 +66,7 @@ public class ElevatorController extends Thread {
 								taskQueue.clear();
 							}
 							setDirection(0);						//Set direction to not move
-							return;
+							continue;
 						}	
 						addQueue(msg);								//Add the message to the queue					
 						break;

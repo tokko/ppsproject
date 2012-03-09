@@ -21,23 +21,13 @@ public class MasterController extends Thread {
 	private BufferedReader in;									// The reader from the socket 
 	private PrintWriter out;									// The writer to the socket
 	private final ArrayList<ElevatorController> controllers; 	// The list of controllers
-	private final int N;
 
-	public MasterController(int N) {
-		this.N = N;
+	public MasterController() {
 		controllers = new ArrayList<ElevatorController>();
 	}
 
 
 
-	public static void main(String[] args) {
-		MasterController mc;
-		if(args.length>0)
-			mc=new MasterController(Integer.valueOf(args[0]));
-		else
-			mc=new MasterController(1);
-		mc.start();
-	}
 	/**
 	 * Initialize the socket and read/write, then run controllElevators
 	 */
@@ -65,7 +55,7 @@ public class MasterController extends Thread {
 	 */
 	private void controllElevators() throws SocketException {
 		System.err.println("Controller starts.");
-		for (int i = 0; i < N; i++) {			//Start all controllers
+		for (int i = 0; i < Elevators.numberOfElevators; i++) {			//Start all controllers
 			controllers.add(new ElevatorController(i + 1));
 			controllers.get(i).start();
 		}
