@@ -1,6 +1,6 @@
 \section{Implementation}
 \subsection{MasterController}
-This class forwards messages from the elevators to the proper ElevatorController and assigns a proper elevator and controller to a floor request (when someone on floor X request an elevator that is moving in direction Y). MasterController extends Thread, and is started from within the initialization of Elevators. See \cref{code:master} for code.
+This class forwards messages from the elevators to the proper ElevatorController and assigns a proper elevator and controller to a floor request (when someone on floor X request an elevator that is moving in direction Y). MasterController extends Thread, and is started from within the initialization of Elevators. See \cref{code:master} on page \cpageref{code:master} for code and \cref{chart:master} on \cpageref{chart:master} for a flow chart.
 
 \subsubsection{run()}
 Overrides the Thread.run() method. What it does is to connect to the elevators through TCP socket, opens the I/O streams and invoke the controlElevators function (see \cref{imp:controlElevators}).
@@ -10,14 +10,14 @@ Main workhorse of the MasterController. It starts a thread that will repeatedly 
 
 \subsection{Assigner}
 This transforms a ''b'' message to a ''p'' message and forwards it to the proper ElevatorController, see \cref{alg:sel} for more info about the algorithm.\newline
-Assigner extends Thread. See \cref{code:master} for code.
+Assigner extends Thread. See \cref{code:master} on \cpageref{code:master} for code and \cref{chart:assigner} on \cpageref{chart:assigner} for a flow chart.
 
 \subsubsection{run()}
 The assigner knows which floor is requested, and which direction is requested.\newline
 Its task is to determine which controller gets the requested task. There are three different outcomes. First is to ''join'' a ride (see \cref{alg:sel} for clarification of ''join''), the second is to assign an empty elevator to the task. The third solution, if both previous are false, then simply have the Thread yield and repeat the first two steps during the next context switch. Eventually one of the two will be true and the assigner posts the task to the proper thread and terminates.
 
 \subsection{ElevatorController}
-This controls a single elevator. Will receive messages from the MasterController and handle the tasks contained within those messages. ElevatorController is both a sort of monitor and extends Thread (it interacts with the MasterController through synchronized method calls).
+This controls a single elevator. Will receive messages from the MasterController and handle the tasks contained within those messages. ElevatorController is both a sort of monitor and extends Thread (it interacts with the MasterController through synchronized method calls). See \cref{code:controller} on \cpageref{code:controller} for code and \cref{chart:controller} on \cpageref{chart:controller} for a flow chart.
 
 \subsubsection{run()}
 \label{imp:elerun}
@@ -51,7 +51,7 @@ It will send an ''open door'' message, sleep for a second, send a ''close doors'
 They are merely synchronized getters/setters adders/pollers.
 
 \subsection{Message}
-Message is a multi-purposed message that is sent between the MasterController and ElevatorControllers. \newline
+Message is a multi-purposed message that is sent between the MasterController and ElevatorControllers. See \cref{code:message} on \cpageref{code:message} for code.\newline
 A message contains the following fields:
 \begin{itemize}
 \item type: 'p', 'f', 'm', 'd'.

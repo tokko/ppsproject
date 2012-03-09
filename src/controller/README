@@ -1,0 +1,13 @@
+This program simulates a elevator controller.
+In the assignment with got a package with gui and socketserver. We have created a program that recieves and send commands over that socket to control the elevators to correct floors.
+
+The program is compiled with javac, and requires the files: all files included in the project, ElevatorController.java, MasterController.java and Message.java
+
+Example compilation and run:
+	javac Elevators.java
+	java Elevators -classpath classes elevator.Elevators -number 5 -top 5 -tcp
+	
+One may also use the supplied makefile to compile:
+	make
+To run the program just use after compiling with the makefile:
+	java Elevators -classpath classes elevator.Elevators -number 5 -top 5 -tcp
