@@ -1,0 +1,98 @@
+
+% Att vi vill ha ett dokument som ser ut som en teknisk artikel, på a4-papper, tvåsidigt med 10 punkters font.
+\documentclass[a4paper,12pt,twoside]{article}
+% sidmarginaler
+\usepackage{tabularx}
+\usepackage[inner=3cm,top=3cm,outer=2cm,bottom=3cm]{geometry}
+% svenska avstavningsregler
+\usepackage[swedish]{babel}
+\usepackage[T1]{fontenc}
+% teckenencoding
+\usepackage[utf8x]{inputenc}
+
+% för import av icke eps-bilder
+\usepackage[pdftex]{graphicx}
+
+% mattesymboler
+\usepackage{amssymb}
+
+% fina kodlistings
+\usepackage{fancyvrb}
+\usepackage{listings}
+
+% lite inställningar till listings-paketet, bland annat så att den bryter för långa rader
+\lstset{
+	% vilket språk vi använder i våra kodlistings, så att listings-paketet vet hur den ska highligta saker
+	language=Java, 
+	% huruvida vi ska ha syntax highlighting
+	fancyvrb=true, 
+	% hur stora tabstopp vi ska ha
+	tabsize=4, 
+	% huruvida vi ska tillåta andra tecken än a-z
+	extendedchars=\true
+	% hur breda listings vi vill ha (skriv exempelvis linewidth=0.5\textwidth för att få listings som bara tar upp halva bredden av sidan)
+	linewidth=\textwidth, 
+	% huruvida vi ska visa mellanslag
+	showstringspaces=false, 
+	% huruvida vi ska bryta rader som är för långa
+	breaklines=true, 
+	% huruvida den ska få bryta rader mitt i ord eller inte (true här betyder att den bara bryter mellan ord)
+	breakatwhitespace=true, 
+	% indentera radbrytningar automatiskt
+	breakautoindent=true,
+	% lägg in radnummer på vänster sida
+	numbers=left, 
+	% hur stora radnumren ska vara
+	numberstyle=\tiny, 
+	% hur långt det ska vara mellan radnumren och koden
+	numbersep=8pt
+}
+% stoppa in fina hyperlänkar (som man kan klicka på) i tableofcontents
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue}
+
+% Ett litet paket för fin pseudokod
+\usepackage{algorithmic}
+\usepackage{algorithm}
+
+% stoppa in ditt namn här nedanför
+\def\myName{Andreas Gustafsson}
+
+% kurskod här (skriver in indans kod som default)
+\def\courseCode{kurskod}
+% kursnamn här (återigen inda som default)
+\def\courseName{kursnamn}
+
+% stoppa in numret på inlämningen här nedanför
+\def\assignmentNumber{1}
+
+% stoppa in datum för när du skriver den här inlämningen här
+%\def\writtenDate{datum}
+
+% fina sidheaders/footers
+\usepackage{fancyhdr}
+% inställningar till fancyhdr
+\pagestyle{fancy}\headheight 13pt
+\fancyfoot{}
+% sidhuvud, vänster sida, fyll i ditt namn här
+%\lhead{\courseCode - \myName}
+% sidhuvud, höger sida, fyll i vilken uppgift detta gäller
+\rhead{uppgift}
+% sidnumrering på vänster sida för jämna sidnummer, höger sida för ojämna sidnummer
+\fancyfoot[LE,RO]{\thepage}
+
+\title{skapa titel!}
+\date{\writtenDate}
+\author{\myName}
+\begin{document}
+
+\maketitle
+	\thispagestyle{empty}\cfoot{}
+\clearpage
+\tableofcontents
+\thispagestyle{empty}\cfoot{}
+\clearpage
+\setcounter{page}{1}
+\section{foo}
+
+\end{document}

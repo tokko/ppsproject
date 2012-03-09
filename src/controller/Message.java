@@ -4,14 +4,14 @@ public class Message {
 
 	private final char type;
 	private final int elevator;
-	private final int modifier;
-	private final double floor;
+	private final int targetFloor;
+	private final double curPos;
 
-	public Message(char type, int elevator, int modifier, double floor) {
+	public Message(char type, int elevator, int targetFloor, double curPos) {
 		this.type = type;
 		this.elevator = elevator;
-		this.modifier = modifier;
-		this.floor = floor;
+		this.targetFloor = targetFloor;
+		this.curPos = curPos;
 	}
 
 	public char getType() {
@@ -22,8 +22,8 @@ public class Message {
 		return elevator;
 	}
 
-	public double getModifier() {
-		return modifier;
+	public double getTargetFloor() {
+		return targetFloor;
 	}
 
 	@Override
@@ -31,7 +31,7 @@ public class Message {
 		if (obj instanceof Message) {
 			Message m = (Message) obj;
 			return type == m.type && elevator == m.elevator
-					&& modifier == m.modifier;
+					&& targetFloor == m.targetFloor;
 		}
 		return false;
 	}
@@ -39,12 +39,12 @@ public class Message {
 	@Override
 	public String toString() {
 		if(type == 'f')
-			return type + " " + elevator + " " + floor;
+			return type + " " + elevator + " " + curPos;
 		else 
-			return type + " " + elevator + " " + modifier;
+			return type + " " + elevator + " " + targetFloor;
 	}
 
-	public double getFloor() {
-		return floor;
+	public double getcurPos() {
+		return curPos;
 	}
 }

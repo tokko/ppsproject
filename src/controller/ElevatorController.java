@@ -1,72 +1,79 @@
 package controller;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Queue;
 
 public class ElevatorController extends Thread {
 	private final Queue<Message> inbox;
 	private final Queue<Message> outbox;
-	private final Queue<Message> taskQueue;
+	private final ArrayList<Message> taskQueue;
 	private double floor;
 	private double targetFloor;
 	private final int elevator;
-	private boolean run;
 	private int direction;
-
+	private int intendedDirection;
+	
 	public ElevatorController(int elevator) {
 		setDirection(0);
+		setIntendedDirection(0);
 		floor = setTargetFloor(0);
 		this.elevator = elevator;
-		taskQueue = new ArrayDeque<Message>();
+		taskQueue = new ArrayList<Message>();
 		outbox = new ArrayDeque<Message>();
 		inbox = new ArrayDeque<Message>();
-		run = true;
 	}
 
 	@Override
 	public void run() {
 		try {
 			while (true) {
-				while (inbox.isEmpty() && taskQueue.isEmpty())
+				while (inbox.isEmpty() && taskQueue.isEmpty()){
 					Thread.yield();
-				if (!getRun())
-					return;
-				Message msg = pollMessage();
-				if (getDirection() == 0) {
-					Message m = pollQueue();
-					if (m != null) {
-						System.err.println("Pulling task: " + m);
-						setTargetFloor(m.getModifier());
-						decideMove();
-					}
 				}
+				Message m = peekQueue();
+				if (m != null) {
+					setTargetFloor(m.getTargetFloor());
+					if (getFloor() >= getTargetFloor() - 0.05 && getFloor() <= getTargetFloor() + 0.05) {
+						doorAction();
+						pollQueue();
+						setDirection(0);
+						continue;
+					}
+					decideMove();
+				}
+				Message msg = pollMessage();
 				if (msg != null) {
 					switch (msg.getType()) {
 					case 'p':
-						if (msg.getModifier() == 32000) {
+						if (msg.getTargetFloor() == 32000) {
 							addMessage(new Message('m', getElevator(), 0, 0));
-							inbox.clear();
+							synchronized (this) {
+								inbox.clear();
+								taskQueue.clear();
+							}
 							setDirection(0);
 							continue;
 						}
-						System.err.println("Enquing task: " + msg);
 						addQueue(msg);
 						break;
 					case 'f':
 						if (getDirection() == 0)
 							continue;
-						setFloor(msg.getFloor());
-						if(Math.abs(getFloor()-getTargetFloor())<0.05){
+						setFloor(msg.getcurPos());
+						if (Math.abs(getFloor() - getTargetFloor()) < 0.05) {
 							addMessage(new Message('m', getElevator(), 0, 0));
-							setDirection(0);
 							doorAction();
+							pollQueue();
+							setDirection(0);
 						}
 						break;
 					default:
-						System.out.println("Unhandled message.");
+						System.err.println("Unhandled message.");
 					}
 				}
 				decideMove();
+				Thread.yield();
 			}
 		} catch (InterruptedException e) {
 			e.printStackTrace();
@@ -74,15 +81,45 @@ public class ElevatorController extends Thread {
 	}
 
 	public synchronized void addQueue(Message msg) {
-		taskQueue.add(msg);
+		System.out.println("Adding task: " + msg);
+		
+		if (!(getDirection() * msg.getcurPos() < getDirection()
+						* getFloor())) {
+			for (int i = 0; i < taskQueue.size(); i++) {
+				//			if (msg.getcurPos() == taskQueue.get(i).getcurPos())
+				//				return;
+				if (getDirection() * msg.getcurPos() < getDirection()
+						* taskQueue.get(i).getcurPos()) {
+					taskQueue.add(i, msg);
+					return;
+				}
+			}
+			taskQueue.add(msg);
+		}else{
+			System.err.println("The Elevator is not heading that way, douche.");
+		}
+	}
+
+	public synchronized int getInboxSize(){
+		return inbox.size();
+	}
+	public synchronized int getTaskQueueSize(){
+		return taskQueue.size();
+	}
+	public synchronized Message peekQueue() {
+//		System.err.println("Peeking taskQueue.");
+		return taskQueue.isEmpty() ? null : taskQueue.get(0);
 	}
 
 	public synchronized Message pollQueue() {
-		return taskQueue.poll();
+//		System.err.println("Polling taskQueue.");
+		if(taskQueue.size() == 1) setIntendedDirection(0);
+		return taskQueue.isEmpty() ? null : taskQueue.remove(0);
 	}
 
 	private void decideMove() {
-		if (getDirection() == 0 && Math.abs(getFloor() - getTargetFloor()) > 0.05) {
+		if (getDirection() == 0
+				&& Math.abs(getFloor() - getTargetFloor()) > 0.05) {
 			System.err.println("DECIDE MOVE");
 			int modifier;
 			if (getFloor() < getTargetFloor() - 0.05) {
@@ -106,14 +143,6 @@ public class ElevatorController extends Thread {
 		Thread.sleep(1000);
 		addMessage(new Message('d', getElevator(), -1, 0));
 		Thread.sleep(1000);
-	}
-
-	public synchronized boolean getRun() {
-		return run;
-	}
-
-	public synchronized void disable() {
-		run = false;
 	}
 
 	public synchronized Message retrieveMessage() {
@@ -146,7 +175,7 @@ public class ElevatorController extends Thread {
 	}
 
 	public synchronized void setDirection(int direction) {
-//		System.err.println("Setting direction to " + direction);
+		// System.err.println("Setting direction to " + direction);
 		this.direction = direction;
 	}
 
@@ -161,6 +190,14 @@ public class ElevatorController extends Thread {
 
 	public int getElevator() {
 		return elevator;
+	}
+
+	public synchronized int getIntendedDirection() {
+		return intendedDirection;
+	}
+
+	public synchronized void setIntendedDirection(int intendedDirection) {
+		this.intendedDirection = intendedDirection;
 	}
 
 }
