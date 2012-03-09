@@ -1,7 +1,8 @@
 \section{Assumptions \& Simplifications}
 \begin{itemize}
-\item The panel button 'Stop' is emergency halt. The elevator is not supposed to restart after a stop event without maintenance. If it is restarted, erratic behavior will be displayed.
+\item The panel button 'Stop' is emergency halt. The elevator is not supposed to restart after a stop event without maintenance. Therefore the controller thread of an elevator that emergency stops will terminate.
 \item It is assumed that it takes twice the time to open and close the doors than it takes to travel one floor\footnote{As observed in the elevators in the E-building, KTH Campus Valhallavägen.}.
+\item We assume the system should run for eternity (the elevators should never be taken offline. Therefore no communication teardown or synchronized thread termination is implemented. 
 \item When a button is pressed (not a panel button), the controllers are told only which direction is desired, not the exact destination. 
 \item The controllers does not know how many floors there is. It is assumed that a floor request from the elevators will always be within the bounds of the building i.e it is not possible to press the button for the seventh floor in a six-story building.
 \item There is no way to determine how many people are in the elevator at any one time. 

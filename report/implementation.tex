@@ -1,15 +1,64 @@
 \section{Implementation}
-
 \subsection{MasterController}
-This class forwards messages from the elevators to the proper ElevatorController and assigns a proper elevator and controller to a floor request (when someone on floor X request an elevator that is moving in direction Y). MasterController extends Thread, and is started from within the initialization of Elevators.
+This class forwards messages from the elevators to the proper ElevatorController and assigns a proper elevator and controller to a floor request (when someone on floor X request an elevator that is moving in direction Y). MasterController extends Thread, and is started from within the initialization of Elevators. See \cref{code:master} for code.
 
 \subsubsection{run()}
 Overrides the Thread.run() method. What it does is to connect to the elevators through TCP socket, opens the I/O streams and invoke the controlElevators function (see \cref{imp:controlElevators}).
 
 \subsubsection{controlElevators()}
-Main workhorse of the MasterController. It starts a thread that will repeatedly poll each controller for a message they wish to be sent to the elevators, and forward it. This thread is anonomously created by wrapping it around a runnable and started inline. Proceed into an infinite loop that reads messages from the socket, and if it is an ''p'' or ''f'' message, it is forwarded to the proper ElevatorController. If it is a ''b'' message, an Assigner (see \cref{imp:assigner}) is inline instantiated and trusted to manage the message.
+Main workhorse of the MasterController. It starts a thread that will repeatedly poll each controller for a message they wish to be sent to the elevators, and forward it. This thread is anonymously created by wrapping it around a runnable and started inline. Proceed into an infinite loop that reads messages from the socket, and if it is an ''p'' or ''f'' message, it is forwarded to the proper ElevatorController. If it is a ''b'' message, an Assigner (see \cref{imp:assigner}) is inline instantiated and trusted to manage the message. 
 
 \subsection{Assigner}
 This transforms a ''b'' message to a ''p'' message and forwards it to the proper ElevatorController, see \cref{alg:sel} for more info about the algorithm.\newline
-Assigner extends Thread.
+Assigner extends Thread. See \cref{code:master} for code.
 
+\subsubsection{run()}
+The assigner knows which floor is requested, and which direction is requested.\newline
+Its task is to determine which controller gets the requested task. There are three different outcomes. First is to ''join'' a ride (see \cref{alg:sel} for clarification of ''join''), the second is to assign an empty elevator to the task. The third solution, if both previous are false, then simply have the Thread yield and repeat the first two steps during the next context switch. Eventually one of the two will be true and the assigner posts the task to the proper thread and terminates.
+
+\subsection{ElevatorController}
+This controls a single elevator. Will receive messages from the MasterController and handle the tasks contained within those messages. ElevatorController is both a sort of monitor and extends Thread (it interacts with the MasterController through synchronized method calls).
+
+\subsubsection{run()}
+\label{imp:elerun}
+This is the main workhorse of ElevatorController. While it has nothing to do, it yields. It detects if it has something to do by first checking if its inbox (a queue where MasterController puts messages destined to this controller) is empty, and that its taskQueue is empty.\newline
+If either of these two conditions fail, it will look at the first element of its task queue (without removing it). If it is not null, and its current floor is not within a $\pm 0.05$ interval of the target floor\footnote{The elevators will send floor update messages with 0.04 intervals.}, it means it should move towards that floor. It will decide which type of movement is required with decideMove() (see \cref{imp:decideMove}). \newline
+It will the proceed to check its inbox, to see if any messages have arrived from the elevators (via MasterController). If the message is not null, there is something. If the message is a ''p'' message with floor value of 32000, it is an emergency stop and a stop message is immediately sent to the elevator.\newline
+If it is a ''p'' message and not an emergency stop, it means that it is a new task, so the message is added to the taskQueue (see \cref{imp:addtask}).\newline
+If it is a ''f'' message, it means that the elevator has moved and the current floor field must be updated. Now, if the current floor is within the $\pm0.05$ interval of the target floor, a ''stop moving'' message is sent to the elevator and the doorAction() function is invoked (see \cref{imp:doorAction}).
+
+\subsubsection{addQueue()}
+\label{imp:addtask}
+This function will add a task to the task queue, and it will do it in one of two ways.
+If the elevator is intended to move downwards, it will add the task such that the queue is ordered in a descending manner with the highest floor at the head of the queue.\newline
+If the elevator is intended to move upwards, it will att the task such that the queue is ordered in an ascending manner with the lowest floor at the head of the queue.
+\newline
+If the new task would cause the elevator to change directions without the task queue being empty at least once before the direction change, the task is ignored.
+
+\subsubsection{decideMove()}
+This function decides if the elevator should move, and in what direction.\newline
+If the elevator is already moving, the function call does nothing.\newline
+If the current floor is lower than target floor minus 0.05 (see \cref{imp:elerun} for explanation), the direction is upwards and a ''move up'' message will be sent to the elevators.\newline
+If the current floor is greater than the target floor plus 0.05 a ''move down'' message will be sent to the elevators.\newline
+If the current floor is within the interval and the elevator is not moving, this function call does nothing.
+
+\subsubsection{doorAction()}
+\label{imp:doorAction}
+This function opens and closes the doors of the elevator.
+It will send an ''open door'' message, sleep for a second, send a ''close doors'' message and sleep a second before returning.
+
+\subsubsection{Remaining methods in ElevatorController}
+They are merely synchronized getters/setters adders/pollers.
+
+\subsection{Message}
+Message is a multi-purposed message that is sent between the MasterController and ElevatorControllers. \newline
+A message contains the following fields:
+\begin{itemize}
+\item type: 'p', 'f', 'm', 'd'.
+\item elevator: Which elevator/controller to the message should go to.
+\item targetFloor: if it is a 'p' message, it will be the floor the elevator should go to. If it is a 'd' message, it will be 1 for open doors and -1 for close doors. If it is a 'm' message it will be 1 for move up and -1 for move down. If it is an 'f' message, targetFloor is unused and may be whatever.
+\item curPos: If it is an 'f' message, it will be the current floor. Otherwise it is unused and it will be whatever.
+\end{itemize}
+
+\subsubsection{Methods of Message}
+They are simply getters/setters and overrides of equals and toString. Just standard stuff.

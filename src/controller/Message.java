@@ -1,11 +1,16 @@
 package controller;
 
+/**
+ * Message used to communicate between threads.
+ * The class consists of getters and setters and overrides toString and equals for our convenience. 
+ * @author Mattias Knutsson and Andreas Gustafsson
+ */
 public class Message {
 
-	private final char type;
-	private final int elevator;
-	private final int targetFloor;
-	private final double curPos;
+	private final char type;				//The type of the message (F,P,M etc.)
+	private final int elevator;				//The ID of the elevator
+	private final int targetFloor;			//The target floor
+	private final double curPos;			//The current position
 
 	public Message(char type, int elevator, int targetFloor, double curPos) {
 		this.type = type;

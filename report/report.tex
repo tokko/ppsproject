@@ -2,9 +2,8 @@
 % Att vi vill ha ett dokument som ser ut som en teknisk artikel, på a4-papper, tvåsidigt med 10 punkters font.
 \documentclass[a4paper,12pt,twoside]{article}
 % sidmarginaler
-\usepackage
 \usepackage{tabularx}
-\usepackage{cref}
+\usepackage{moreverb}
 \usepackage[inner=3cm,top=3cm,outer=2cm,bottom=3cm]{geometry}
 % svenska avstavningsregler
 \usepackage[swedish]{babel}
@@ -73,18 +72,19 @@
 
 % fina sidheaders/footers
 \usepackage{fancyhdr}
+\usepackage{cleveref}
 % inställningar till fancyhdr
 \pagestyle{fancy}\headheight 13pt
 \fancyfoot{}
 % sidhuvud, vänster sida, fyll i ditt namn här
 \lhead{\myName}
 % sidhuvud, höger sida, fyll i vilken uppgift detta gäller
-\rhead{Project}
+\rhead{Project - The Green Elevator}
 % sidnumrering på vänster sida för jämna sidnummer, höger sida för ojämna sidnummer
 \fancyfoot[LE,RO]{\thepage}
 
 \title{Green Elevator}
-\date{\writtenDate}
+%\date{\writtenDate}
 \author{\myName}
 \begin{document}
 
@@ -97,16 +97,18 @@
 \setcounter{page}{1}
 
 \input{assumptions.tex}
-\cleardoublepage
+\clearpage
 \input{application.tex}
-\cleardoublepage
+\clearpage
 \input{algorithm.tex}
-\cleardoublepage
+\clearpage
 \input{implementation.tex}
-\cleardoublepage}
+\clearpage
 \input{environments.tex}
-\cleardoublepage
+\clearpage
 \input{achievments.tex}
-\cleardoublpage
+\begin{comment}
+\clearpage
 \input{appendix.tex}
+\end{comment}
 \end{document}
