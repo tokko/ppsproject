@@ -465,7 +465,6 @@ public class Elevators {
 	 * objects with the <code>Elevator</code> class.
 	 */
 	public static void main(String[] args) {
-		new MasterController().start();
 		Elevators elevators = new Elevators(args);
 	}
 
